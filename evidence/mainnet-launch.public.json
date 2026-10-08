@@ -1,0 +1,92 @@
+{
+  "format": "tollex-mainnet-launch-public/1",
+  "description": "Sanitized record of the first Tollex settlement on Robinhood Chain mainnet. Every on-chain value below can be checked against any Robinhood Chain RPC endpoint; see docs/VERIFY.md.",
+  "result": "LAUNCHED",
+  "launch": {
+    "startedAt": "2026-10-08T12:55:20.262Z",
+    "writesEnabledAt": "2026-10-08T13:06:08.768Z",
+    "finishedAt": "2026-10-08T13:16:13.863Z"
+  },
+  "network": {
+    "caip2": "eip155:4663",
+    "chainId": 4663,
+    "name": "Robinhood Chain mainnet",
+    "publicRpc": "https://rpc.mainnet.chain.robinhood.com"
+  },
+  "release": {
+    "sourceCommit": "abff565c2188a11b5cfd3043383e5e43d0441c2d",
+    "imageDigest": "sha256:ba35243f137d7c3dfdd053957bb80cf40df8f26a37210670856d5c5ef57678ae",
+    "releaseSubjectHash": "b5dfdce5c677aaab812b7edbad0de881d253aa8e93b2377ea16eb24b1d63caa9",
+    "ownerApproval": "signed by the owner key and verified before writes were enabled",
+    "sourceAvailability": "proprietary; the commit hash identifies the private source revision that was built and deployed"
+  },
+  "endpoint": "https://api.tollex.org",
+  "asset": {
+    "symbol": "USDG",
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6
+  },
+  "identities": {
+    "relayer": {
+      "address": "0xcBE1b48c188edf24b3c939E46647A80Fb9f75645",
+      "role": "submits settlement transactions and pays gas; holds ETH only"
+    },
+    "receiptSigner": {
+      "address": "0x69d778C105b7f94Bde775d7ae94F1daa56DAA88F",
+      "role": "signs EIP-712 execution receipts; never holds funds; published at /.well-known/tollex-receipt-keys"
+    },
+    "canaryPayer": {
+      "address": "0x488Bf1856c50Ec965b13D8e745FF31f6b1fc4841",
+      "role": "operator-owned test payer used for the launch canary"
+    },
+    "treasury": {
+      "address": "0x2eB98e76db13287eD4AEE5F1C7f14a7e378966B7",
+      "role": "receives payments for Tollex first-party capabilities"
+    }
+  },
+  "transaction": {
+    "hash": "0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533",
+    "blockNumber": 83335219,
+    "from": "0xcBE1b48c188edf24b3c939E46647A80Fb9f75645",
+    "to": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "method": "EIP-3009 transferWithAuthorization (x402 exact scheme)",
+    "transfer": {
+      "from": "0x488Bf1856c50Ec965b13D8e745FF31f6b1fc4841",
+      "to": "0x2eB98e76db13287eD4AEE5F1C7f14a7e378966B7",
+      "amountAtomic": "1000",
+      "amount": "0.001 USDG"
+    },
+    "gasUsed": 102950,
+    "effectiveGasPriceWei": "991236000",
+    "gasCostWei": "102047746200000",
+    "gasCapWei": "800000000000000",
+    "relayerNonceBefore": 0
+  },
+  "checks": {
+    "status": true,
+    "fromRelayer": true,
+    "exactTransferPayerToTreasury": true,
+    "payerCharged": true,
+    "treasuryCredited": true,
+    "relayerOnlyPaidGas": true,
+    "gasWithinEnvelope": true,
+    "receiptSignerUntouched": true,
+    "authorizationUsed": true,
+    "receiptVerifiedByCanary": true,
+    "reconciledByCanary": true
+  },
+  "canaryStages": [
+    "supported:ok",
+    "challenge_402:ok",
+    "authorize_verify_settle:ok",
+    "receipt:ok",
+    "charge_bound:ok",
+    "l2_inclusion:ok",
+    "reconciliation:ok"
+  ],
+  "afterLaunch": {
+    "scheduledCanary": "stopped",
+    "externalThirdPartyMainnetRouting": "disabled at initial launch",
+    "publicDiscoveryPostflight": "PASS"
+  }
+}

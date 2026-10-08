@@ -1,0 +1,16 @@
+Tollex
+Copyright (c) 2026 Tollex. All rights reserved.
+
+This repository is published for documentation and independent verification of the Tollex production
+service. It is not an open-source release and is not offered under an open-source license.
+
+The Tollex software, including its facilitator, relayer, policy, routing, receipt and reconciliation
+components, is proprietary and is not contained in this repository. Nothing in this repository grants
+any license or right to use, copy, modify, reimplement or distribute the Tollex software or any part
+of it, or to use the Tollex name or marks.
+
+You may read this repository and run the verification script and workflow it contains for the purpose
+of verifying the public Tollex service. Any other use requires prior written permission.
+
+Third-party names (x402, Robinhood Chain, USDG, A2A, OpenAPI) belong to their respective owners and
+are used only to describe interoperability.

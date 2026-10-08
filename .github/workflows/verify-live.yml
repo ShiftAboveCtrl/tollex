@@ -1,0 +1,32 @@
+name: Live Production Verification
+
+# Checks the public Tollex surfaces with public information only. It needs no secrets, never pays,
+# never signs and never writes. It runs twice a day, on demand, and when this repository changes.
+on:
+  schedule:
+    - cron: "17 5,17 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-live
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Public API surfaces
+        run: scripts/verify-live.sh
+      - name: Launch settlement on Robinhood Chain (public RPC)
+        # The public RPC may rate-limit shared CI runners; the API checks above are the gate.
+        continue-on-error: true
+        run: scripts/verify-live.sh --chain
+      - name: Evidence checksums
+        run: sha256sum -c evidence/checksums.txt
