@@ -9,6 +9,7 @@
   <a href="https://api.tollex.org/v1/catalog"><img alt="Capabilities" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.tollex.org%2F.well-known%2Ftollex.json&query=%24.capabilities.count&label=live%20capabilities&color=7dd3fc&labelColor=0d1018&style=for-the-badge"></a>
   <a href="docs/X402.md"><img alt="x402 v2" src="https://img.shields.io/badge/x402-v2%20native%20facilitator-a78bfa?labelColor=0d1018&style=for-the-badge"></a>
   <a href="docs/MAINNET_LAUNCH.md"><img alt="Robinhood Chain mainnet" src="https://img.shields.io/badge/robinhood%20chain-mainnet%204663-6ee7b7?labelColor=0d1018&style=for-the-badge"></a>
+  <a href="https://github.com/ShiftAboveCtrl/tollex/actions/workflows/verify-live.yml"><img alt="Live Production Verification" src="https://img.shields.io/github/actions/workflow/status/ShiftAboveCtrl/tollex/verify-live.yml?branch=main&label=live%20verification&labelColor=0d1018&style=for-the-badge"></a>
 </p>
 
 <p align="center">
@@ -247,7 +248,7 @@ scripts/verify-live.sh --chain
 ```
 
 The [Live Production Verification](.github/workflows/verify-live.yml) workflow runs the same checks twice
-a day from GitHub's runners; each run's results are listed under the repository's Actions tab.
+a day from GitHub's runners and publishes the result as the live verification badge above.
 
 <br>
 
