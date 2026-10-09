@@ -9,7 +9,6 @@
   <a href="https://api.tollex.org/v1/catalog"><img alt="Capabilities" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.tollex.org%2F.well-known%2Ftollex.json&query=%24.capabilities.count&label=live%20capabilities&color=7dd3fc&labelColor=0d1018&style=for-the-badge"></a>
   <a href="docs/X402.md"><img alt="x402 v2" src="https://img.shields.io/badge/x402-v2%20native%20facilitator-a78bfa?labelColor=0d1018&style=for-the-badge"></a>
   <a href="docs/MAINNET_LAUNCH.md"><img alt="Robinhood Chain mainnet" src="https://img.shields.io/badge/robinhood%20chain-mainnet%204663-6ee7b7?labelColor=0d1018&style=for-the-badge"></a>
-  <a href="https://github.com/ShiftAboveCtrl/tollex/actions/workflows/verify-live.yml"><img alt="Live Production Verification" src="https://img.shields.io/github/actions/workflow/status/ShiftAboveCtrl/tollex/verify-live.yml?branch=main&label=live%20verification&labelColor=0d1018&style=for-the-badge"></a>
 </p>
 
 <p align="center">
@@ -144,34 +143,7 @@ operator **canary payer** used only for controlled launch checks. Details: [ARCH
 
 ## The life of a paid call
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant A as Agent
-    participant T as Tollex API
-    participant P as Policy and pricing
-    participant F as Native facilitator
-    participant R as Relayer
-    participant C as Robinhood Chain (USDG)
-    participant S as Receipt signer
-
-    A->>T: GET /.well-known/tollex.json, /v1/catalog
-    A->>T: POST /v1/resolve { need }
-    T-->>A: plan: capability, price, terms (free)
-    A->>T: POST /tools/{capability} (unpaid)
-    T->>P: admit, price, bound
-    T-->>A: 402 Payment Required + PAYMENT-REQUIRED (x402 v2)
-    Note over A: agent checks terms against its own policy,<br/>signs an EIP-3009 authorization for exactly that amount
-    A->>T: POST /tools/{capability} + PAYMENT-SIGNATURE
-    T->>F: verify against the issued challenge
-    F->>R: settle
-    R->>C: transferWithAuthorization (payer to treasury)
-    C-->>R: included; authorization consumed
-    T->>T: run the capability once
-    T->>S: sign EIP-712 receipt over request, response, price, settlement
-    T-->>A: 200 result + PAYMENT-RESPONSE (tx hash, receipt)
-    Note over T,C: reconciler confirms inclusion and binds the transaction to the operation
-```
+<p align="center"><img src="assets/paid-call.svg" alt="The life of a paid Tollex call: discover and plan for free, receive a 402 challenge, pay with an EIP-3009 authorization, settlement on Robinhood Chain, signed receipt" width="100%"></p>
 
 Every arrow above is observable: the challenge, the transaction and the receipt are each verifiable
 without trusting Tollex. Full walkthrough: [X402](docs/X402.md).
@@ -275,7 +247,7 @@ scripts/verify-live.sh --chain
 ```
 
 The [Live Production Verification](.github/workflows/verify-live.yml) workflow runs the same checks twice
-a day from GitHub's runners and publishes the result as the badge above.
+a day from GitHub's runners; each run's results are listed under the repository's Actions tab.
 
 <br>
 
