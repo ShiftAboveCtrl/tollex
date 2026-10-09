@@ -3,6 +3,31 @@
 Instructions for an AI agent or coding agent integrating Tollex. Use the structured endpoints below; do
 not scrape the website.
 
+## The canonical path (do these in order)
+
+1. **Discover**: `GET https://api.tollex.org/.well-known/tollex.json`.
+2. **Inspect capabilities**: `GET https://api.tollex.org/v1/catalog` (ids, input schemas, prices).
+3. **Plan for the need**: `POST https://api.tollex.org/v1/resolve` `{"need": "..."}`. Free.
+4. **Get the terms**: `POST https://api.tollex.org/tools/{toolId}` without payment, read the `402`.
+5. **Check asset and network**: only `eip155:4663` + USDG. If the payer has none, stop and tell the human.
+6. **Enforce the ceiling**: refuse when `amount` > the ceiling the human configured. Never pick a ceiling yourself.
+7. **Ask before paying** unless the human has explicitly enabled autonomous payment with that ceiling.
+8. **Pay**: sign EIP-3009 for exactly `amount` to `payTo` and resend with `PAYMENT-SIGNATURE` (details below).
+9. **Use the result** and **verify the receipt** (below). Show the Blockscout link.
+10. **On rejection or uncertainty**: follow the outcomes table; never re-sign before checking the operation.
+
+First success, no wallet needed (steps 1 to 4):
+
+```bash
+curl -s https://api.tollex.org/v1/resolve -H 'content-type: application/json' -d '{"need":"latest block on Robinhood Chain"}'
+curl -s -D - -o /dev/null -X POST https://api.tollex.org/tools/chain_get_block -H 'content-type: application/json' -d '{"block":"latest"}' | grep -i '^payment-required:'
+```
+
+Minimum integration to build when a human asks you to "integrate Tollex": a `plan(need)` function (step 3), a
+`terms(toolId, input)` function (step 4), a `buy(toolId, input)` function gated by a configured ceiling and an
+explicit opt-in (steps 5 to 8), and `verifyReceipt(receipt)` (step 9). Reference implementations:
+[TypeScript](examples/typescript/src/tollex.ts), [Python](examples/python/tollex_client.py).
+
 ## What Tollex is
 
 A paid-capability service for autonomous software on **Robinhood Chain mainnet** (`eip155:4663`). An agent

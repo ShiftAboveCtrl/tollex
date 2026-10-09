@@ -13,6 +13,7 @@ key that holds USDG on Robinhood Chain.**
 | [A2A](a2a/a2a_tollex.py) | `python a2a/a2a_tollex.py` | JSON-RPC 1.0 + a2a-x402 payment flow |
 | [LangChain / LangGraph](langgraph/tollex_langgraph.py) | `TOLLEX_AGENT_MODEL=... python tollex_langgraph.py "..."` | tools + `create_agent` (LangChain 1.4) |
 | [CrewAI](crewai/tollex_crewai.py) | `TOLLEX_AGENT_MODEL=... python tollex_crewai.py "..."` | tools + Crew (CrewAI 1.15, Python 3.10 to 3.13) |
+| [Agent demo](agent-demo/agent_demo.py) | `python agent-demo/agent_demo.py "<need>"` | full loop with a human approval prompt and receipt check |
 | [Google ADK](google-adk/tollex_agent/agent.py) | `adk run tollex_agent` (from `google-adk/`) | function tools (google-adk 2.11) |
 
 "Verified" means the example was run against production on 2026-10-09: free paths end to end, and the payment

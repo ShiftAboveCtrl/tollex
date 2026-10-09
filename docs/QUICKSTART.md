@@ -52,6 +52,16 @@ Agent frameworks (the agent plans and reads prices freely; it can only pay when 
 
 ## Give this prompt to your coding agent
 
+Short version (ChatGPT, Codex, Claude Code, Gemini, Cursor):
+
+```text
+Integrate this project with Tollex. Read https://raw.githubusercontent.com/ShiftAboveCtrl/tollex/main/AGENTS.md
+and use only its public production interfaces at https://api.tollex.org. Never spend funds without my explicit
+approval and a ceiling I set. Discover the capabilities, then build the minimum working integration.
+```
+
+Detailed version:
+
 ```
 Integrate Tollex (https://api.tollex.org) into this project. Read
 https://raw.githubusercontent.com/ShiftAboveCtrl/tollex/main/AGENTS.md first and follow it exactly.

@@ -24,6 +24,25 @@
 
 <br>
 
+| | |
+| --- | --- |
+| **What** | Paid capabilities for software agents: plan for free, pay per call over x402 v2, get a signed receipt for every result |
+| **Live?** | Yes, on mainnet since 2026-10-08. [First settlement on Blockscout](https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533) · [public activity](https://tollex.org/activity/) |
+| **Network** | Robinhood Chain mainnet `eip155:4663`, USDG (`0x5fc5…d168`, 6 decimals, EIP-3009) |
+| **Try it (nothing spent)** | `git clone https://github.com/ShiftAboveCtrl/tollex && cd tollex && examples/curl/try-tollex.sh` |
+| **Integrate** | [QUICKSTART](docs/QUICKSTART.md) · [AGENTS.md](AGENTS.md) · [examples/](examples/) · [developers](https://tollex.org/developers/) |
+| **Discover** | [`/.well-known/tollex.json`](https://api.tollex.org/.well-known/tollex.json) · [OpenAPI](https://api.tollex.org/openapi.json) · [catalog](https://api.tollex.org/v1/catalog) · [A2A card](https://api.tollex.org/.well-known/agent-card.json) · [llms.txt](https://api.tollex.org/llms.txt) |
+| **Verify** | [receipt keys](https://api.tollex.org/.well-known/tollex-receipt-keys) · [RECEIPTS](docs/RECEIPTS.md) · [VERIFY](docs/VERIFY.md) |
+| **Follow** | [@tollexdotorg](https://x.com/tollexdotorg) |
+
+**Using a coding agent?** Paste this:
+
+```text
+Integrate this project with Tollex. Read https://raw.githubusercontent.com/ShiftAboveCtrl/tollex/main/AGENTS.md
+and use only its public production interfaces at https://api.tollex.org. Never spend funds without my explicit
+approval and a ceiling I set. Discover the capabilities, then build the minimum working integration.
+```
+
 ## What Tollex is
 
 Software agents can already read the web and call APIs. What they cannot do safely is **transact**: buy
