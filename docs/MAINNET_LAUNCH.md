@@ -1,5 +1,7 @@
 # Mainnet launch (2026-10-08)
 
+![First Tollex mainnet settlement](../assets/launch-proof.svg)
+
 Tollex was enabled for payments on Robinhood Chain mainnet on 2026-10-08 with a single command that
 refused to proceed unless every check passed, and that would have returned production to read-only
 on any failure.

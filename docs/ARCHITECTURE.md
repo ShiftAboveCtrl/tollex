@@ -4,30 +4,9 @@ This page describes the layers of Tollex and how a paid call moves through them.
 stays at the level needed to understand and verify the service; implementation details are
 proprietary.
 
-## Layers
+![Tollex architecture](../assets/architecture.svg)
 
-```
- agent
-   |  discovery (descriptor, OpenAPI, llms.txt, catalogue, A2A card)      free
-   |  planning  (resolve)                                                 free
-   v
- +-----------------------------+
- | policy                      |  is this call allowed, at what price, under which limits
- +-----------------------------+
- | capability service          |  402 challenge with exact terms; runs the capability once paid
- +-----------------------------+
- | facilitator (x402 native)   |  verifies the payment authorization; settles it on chain
- +-----------------------------+
- | relayer                     |  submits the settlement transaction and pays its gas
- +-----------------------------+
- | receipts                    |  EIP-712 receipt bound to request, response and payment
- +-----------------------------+
- | reconciliation              |  confirms every settlement on chain and matches it to its operation
- +-----------------------------+
-   |
-   v
- Robinhood Chain mainnet (USDG, EIP-3009)
-```
+## Layers
 
 Each layer has one job and its own failure behaviour:
 

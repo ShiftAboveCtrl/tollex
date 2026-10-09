@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: mailto:security@tollex.org
+    about: Please email security reports privately instead of opening an issue (see SECURITY.md).
+  - name: Service discovery document
+    url: https://api.tollex.org/.well-known/tollex.json
+    about: The canonical, machine-readable description of the live Tollex service.

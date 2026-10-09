@@ -1,0 +1,18 @@
+name: Verification discrepancy
+description: A public check in this repository disagrees with the live service or the chain.
+labels: [verification]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you check?
+      description: The command, document section or evidence field.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What did you observe?
+      description: Output of scripts/verify-live.sh, or the RPC response. Do not include private keys or credentials.
+    validations:
+      required: true

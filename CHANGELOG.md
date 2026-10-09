@@ -2,6 +2,12 @@
 
 Public milestones of the Tollex production service.
 
+## 2026-10-08: Public documentation
+
+- Expanded documentation: receipts reference, full capability reference, glossary, architecture and
+  launch-proof diagrams.
+- Live status badges sourced directly from the production service.
+
 ## 2026-10-08: Robinhood Chain mainnet launch
 
 - Production service live at `https://api.tollex.org` on Robinhood Chain mainnet (`eip155:4663`).
