@@ -1,0 +1,147 @@
+"""Minimal Tollex client: discovery, free planning, payment terms, a guarded x402 payment and receipt
+verification, against the public production API. Dependencies: requests, eth-account, rfc8785.
+
+Nothing here spends unless you call buy() with a private key and an explicit ceiling.
+"""
+from __future__ import annotations
+
+import base64
+import json
+import os
+import secrets
+import time
+from typing import Any
+
+import requests
+import rfc8785
+from eth_account import Account
+from eth_account.messages import encode_typed_data
+from eth_utils import keccak, to_checksum_address
+
+TOLLEX = os.environ.get("TOLLEX_URL", "https://api.tollex.org")
+NETWORK = "eip155:4663"  # Robinhood Chain mainnet
+CHAIN_ID = 4663
+USDG = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"  # 6 decimals
+BLOCKSCOUT = "https://robinhoodchain.blockscout.com/tx/"
+TIMEOUT = 30
+
+
+class Rejected(Exception):
+    """The payment was refused before anything was sent on chain; no funds moved."""
+
+
+def discover() -> dict:
+    """1. Service descriptor: network, asset, endpoints, receipt format."""
+    return requests.get(f"{TOLLEX}/.well-known/tollex.json", timeout=TIMEOUT).json()
+
+
+def plan(need: str, input: dict | None = None, max_cost: int | None = None) -> dict:
+    """2. Free planning: which capability fits, and what it costs. Never spends."""
+    body: dict[str, Any] = {"need": need}
+    if input is not None:
+        body["input"] = input
+    if max_cost is not None:
+        body["constraints"] = {"maxCost": str(max_cost)}
+    return requests.post(f"{TOLLEX}/v1/resolve", json=body, timeout=TIMEOUT).json()
+
+
+def _b64json(header: str) -> dict:
+    return json.loads(base64.b64decode(header))
+
+
+def terms(tool_id: str, input: dict) -> dict:
+    """3. An unpaid call returns HTTP 402 with the exact, authoritative payment terms."""
+    r = requests.post(f"{TOLLEX}/tools/{tool_id}", json=input, timeout=TIMEOUT)
+    if r.status_code == 503:
+        raise RuntimeError("paid calls paused (network gas spike); retry later, nothing was charged")
+    if r.status_code != 402:
+        raise RuntimeError(f"expected 402 payment terms, got {r.status_code}")
+    challenge = _b64json(r.headers["payment-required"])
+    for option in challenge["accepts"]:
+        if option["network"] == NETWORK and to_checksum_address(option["asset"]) == to_checksum_address(USDG):
+            return {"url": f"{TOLLEX}/tools/{tool_id}", "amount": int(option["amount"]), "option": option, "challenge": challenge}
+    raise RuntimeError("no USDG payment option on Robinhood Chain in the challenge")
+
+
+def _authorization(account, option: dict) -> dict:
+    """EIP-3009 transferWithAuthorization for exactly the quoted amount, to the quoted recipient."""
+    auth = {
+        "from": account.address,
+        "to": to_checksum_address(option["payTo"]),
+        "value": str(option["amount"]),
+        "validAfter": "0",
+        "validBefore": str(int(time.time()) + int(option["maxTimeoutSeconds"])),
+        "nonce": "0x" + secrets.token_hex(32),
+    }
+    typed = {
+        "types": {
+            "EIP712Domain": [
+                {"name": "name", "type": "string"},
+                {"name": "version", "type": "string"},
+                {"name": "chainId", "type": "uint256"},
+                {"name": "verifyingContract", "type": "address"},
+            ],
+            "TransferWithAuthorization": [
+                {"name": "from", "type": "address"},
+                {"name": "to", "type": "address"},
+                {"name": "value", "type": "uint256"},
+                {"name": "validAfter", "type": "uint256"},
+                {"name": "validBefore", "type": "uint256"},
+                {"name": "nonce", "type": "bytes32"},
+            ],
+        },
+        "primaryType": "TransferWithAuthorization",
+        "domain": {"name": option["extra"]["name"], "version": option["extra"]["version"], "chainId": CHAIN_ID, "verifyingContract": to_checksum_address(option["asset"])},
+        "message": {**auth, "value": int(auth["value"]), "validAfter": 0, "validBefore": int(auth["validBefore"]), "nonce": bytes.fromhex(auth["nonce"][2:])},
+    }
+    signed = account.sign_message(encode_typed_data(full_message=typed))
+    return {"authorization": auth, "signature": "0x" + signed.signature.hex().removeprefix("0x")}
+
+
+def buy(private_key: str, tool_id: str, input: dict, max_atomic_usdg: int) -> dict:
+    """4. Pay and call, ONLY at or below max_atomic_usdg. Returns the result and the settlement."""
+    t = terms(tool_id, input)
+    if t["amount"] > max_atomic_usdg:
+        raise ValueError(f"refusing to pay {t['amount']} > ceiling {max_atomic_usdg} atomic USDG (nothing signed)")
+    account = Account.from_key(private_key)
+    payment = {"x402Version": 2, "accepted": t["option"], "resource": t["challenge"]["resource"], "payload": _authorization(account, t["option"])}
+    header = base64.b64encode(json.dumps(payment, separators=(",", ":")).encode()).decode()
+    r = requests.post(t["url"], json=input, headers={"PAYMENT-SIGNATURE": header}, timeout=120)
+    if r.status_code == 402:
+        raise Rejected(r.json().get("error", "rejected"))
+    settlement = _b64json(r.headers["payment-response"]) if "payment-response" in r.headers else None
+    return {"status": r.status_code, "result": r.json(), "settlement": settlement}
+
+
+def operation(operation_id: str) -> dict:
+    """If a response was lost, ask for the operation's state instead of paying again."""
+    return requests.get(f"{TOLLEX}/tollex/operations/{operation_id}", timeout=TIMEOUT).json()
+
+
+def get_receipt(receipt_id: str) -> dict:
+    return requests.get(f"{TOLLEX}/tollex/receipts/{receipt_id}", timeout=TIMEOUT).json()
+
+
+def verify_receipt(receipt: dict) -> dict:
+    """5. contentHash = keccak256(RFC 8785 JSON of the body); the EIP-712 signer must be an ACTIVE Tollex key."""
+    body = receipt["body"]
+    content_hash = "0x" + keccak(rfc8785.dumps(body)).hex()
+    typed = {
+        "types": {
+            "EIP712Domain": [{"name": "name", "type": "string"}, {"name": "version", "type": "string"}],
+            "ExecutionReceipt": [
+                {"name": "version", "type": "uint256"},
+                {"name": "receiptId", "type": "string"},
+                {"name": "contentHash", "type": "bytes32"},
+                {"name": "issuedAt", "type": "uint256"},
+            ],
+        },
+        "primaryType": "ExecutionReceipt",
+        "domain": {"name": "Tollex Execution Receipt", "version": "1"},
+        "message": {"version": int(body["version"]), "receiptId": body["receiptId"], "contentHash": bytes.fromhex(content_hash[2:]), "issuedAt": int(body["issuedAt"])},
+    }
+    signer = Account.recover_message(encode_typed_data(full_message=typed), signature=receipt["signature"])
+    keys = requests.get(f"{TOLLEX}/.well-known/tollex-receipt-keys", timeout=TIMEOUT).json()["keys"]
+    active = any(k["status"] == "active" and to_checksum_address(k["address"]) == signer for k in keys)
+    hash_ok = content_hash == receipt["contentHash"]
+    return {"valid": hash_ok and active, "contentHashMatches": hash_ok, "signer": signer, "signerIsActiveTollexKey": active}

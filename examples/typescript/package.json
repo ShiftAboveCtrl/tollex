@@ -1,0 +1,23 @@
+{
+  "name": "tollex-typescript-example",
+  "private": true,
+  "type": "module",
+  "description": "Discover, plan, pay (only with an explicit ceiling) and verify receipts against https://api.tollex.org",
+  "scripts": {
+    "try": "tsx src/try.ts",
+    "verify-receipt": "tsx src/verify-receipt.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@x402/core": "2.28.0",
+    "@x402/evm": "2.28.0",
+    "@x402/fetch": "2.28.0",
+    "canonicalize": "2.1.0",
+    "viem": "2.38.6"
+  },
+  "devDependencies": {
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "@types/node": "22.18.10"
+  }
+}

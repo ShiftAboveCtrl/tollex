@@ -2,6 +2,8 @@
 
 | Start here | |
 | --- | --- |
+| [QUICKSTART](QUICKSTART.md) | Integrate in 5 minutes, troubleshooting, coding-agent prompt |
+| [AGENTS.md](../AGENTS.md) | Instructions for AI agents |
 | [PRODUCT](PRODUCT.md) | What Tollex offers and to whom |
 | [ARCHITECTURE](ARCHITECTURE.md) | Layers, identities and the flow of a paid call |
 | [X402](X402.md) | x402 v2 on Robinhood Chain: challenge, payment, settlement |

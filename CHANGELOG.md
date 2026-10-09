@@ -2,6 +2,13 @@
 
 Public milestones of the Tollex production service.
 
+## 2026-10-09: Developer onboarding
+
+- [QUICKSTART](docs/QUICKSTART.md) and [AGENTS.md](AGENTS.md) for developers and coding agents.
+- Runnable examples against production: curl, TypeScript (`@x402/fetch` 2.28), Python, A2A, LangChain /
+  LangGraph, CrewAI and Google ADK, each with receipt verification and payment guarded by an explicit ceiling.
+- Every settled transaction on [tollex.org/activity](https://tollex.org/activity/) links to Blockscout.
+
 ## 2026-10-08: Public documentation
 
 - Expanded documentation: receipts reference, full capability reference, glossary, architecture and

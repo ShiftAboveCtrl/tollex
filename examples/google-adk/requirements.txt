@@ -1,0 +1,2 @@
+-r ../python/requirements.txt
+google-adk==2.11.0

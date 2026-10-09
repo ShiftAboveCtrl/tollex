@@ -1,0 +1,4 @@
+-r ../python/requirements.txt
+langchain==1.4.4
+langchain-core==1.6.9
+langgraph==1.2.14

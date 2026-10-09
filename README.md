@@ -189,6 +189,17 @@ curl -s -X POST https://api.tollex.org/a2a -H 'content-type: application/json' -
 To complete a payment, any x402 v2 client signs the authorization from step 3 and retries the request
 with a `PAYMENT-SIGNATURE` header. See [AGENT_DISCOVERY](docs/AGENT_DISCOVERY.md) and [X402](docs/X402.md).
 
+### Integrate in 5 minutes
+
+| | |
+| --- | --- |
+| [QUICKSTART](docs/QUICKSTART.md) | From discovery to a verified purchase; pricing, troubleshooting, a prompt for your coding agent |
+| [AGENTS.md](AGENTS.md) | Exact instructions for an AI agent or coding agent |
+| [examples/](examples/) | curl, TypeScript (`@x402/fetch`), Python, A2A, LangChain / LangGraph, CrewAI, Google ADK |
+
+Every example pays only with an explicit opt-in and a hard ceiling. With `@x402/fetch`, allow USDG on
+Robinhood Chain in `spendControls.allowedAssets`; it is not a default asset.
+
 <br>
 
 ## Capabilities
