@@ -231,7 +231,11 @@ verification: [RECEIPTS](docs/RECEIPTS.md).
 
 ## Proof of production
 
-<p align="center"><img src="assets/launch-proof.svg" alt="First Tollex mainnet settlement: transaction 0x82f1c72c...1c533, block 83,335,219, 11 of 11 launch checks true" width="100%"></p>
+<p align="center"><a href="https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533"><img src="assets/launch-proof.svg" alt="First Tollex mainnet settlement: transaction 0x82f1c72c...1c533, block 83,335,219, 11 of 11 launch checks true" width="100%"></a></p>
+
+<p align="center">
+  <a href="https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533"><img alt="View the first mainnet settlement on Blockscout" src="https://img.shields.io/badge/view%20on-Blockscout-7dd3fc?labelColor=0d1018&style=for-the-badge"></a>
+</p>
 
 Tollex was enabled for payments on Robinhood Chain mainnet on **2026-10-08** through a single gated
 launch: every preflight gate passed, the exact release (source commit and image digest) was approved by

@@ -28,7 +28,8 @@ on any failure.
 
 | Field | Value |
 | --- | --- |
-| Transaction | `0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533` |
+| Transaction | [`0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533`](https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533) |
+| Explorer | [View on Blockscout](https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533) |
 | Block | 83335219 |
 | Method | USDG `transferWithAuthorization` (EIP-3009), sent by the relayer |
 | Transfer | 1000 atomic USDG (0.001), canary payer to treasury |

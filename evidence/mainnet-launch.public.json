@@ -11,7 +11,8 @@
     "caip2": "eip155:4663",
     "chainId": 4663,
     "name": "Robinhood Chain mainnet",
-    "publicRpc": "https://rpc.mainnet.chain.robinhood.com"
+    "publicRpc": "https://rpc.mainnet.chain.robinhood.com",
+    "explorer": "https://robinhoodchain.blockscout.com"
   },
   "release": {
     "sourceCommit": "abff565c2188a11b5cfd3043383e5e43d0441c2d",
@@ -60,7 +61,8 @@
     "effectiveGasPriceWei": "991236000",
     "gasCostWei": "102047746200000",
     "gasCapWei": "800000000000000",
-    "relayerNonceBefore": 0
+    "relayerNonceBefore": 0,
+    "explorer": "https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533"
   },
   "checks": {
     "status": true,

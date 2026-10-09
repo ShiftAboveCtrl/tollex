@@ -98,6 +98,7 @@ if [ "${1:-}" = "--chain" ]; then
   if jq -e ".result.status == \"0x1\" and (.result.blockNumber | ltrimstr(\"0x\")) == \"$(printf '%x' $LAUNCH_BLOCK)\"
             and (.result.from | ascii_downcase) == \"$RELAYER\" and (.result.to | ascii_downcase) == \"$USDG\"" "$TMP/rcpt" >/dev/null 2>&1; then
     ok "launch tx receipt" "success in block $LAUNCH_BLOCK, sent by the relayer to USDG"
+    echo "      explorer: https://robinhoodchain.blockscout.com/tx/$LAUNCH_TX"
   else bad "launch tx receipt" "unexpected or unavailable"; fi
   if jq -e "any(.result.logs[]; (.address | ascii_downcase) == \"$USDG\" and .topics[0] == \"$TRANSFER\"
             and .topics[1] == \"$(pad $CANARY_PAYER)\" and .topics[2] == \"$(pad $TREASURY)\"

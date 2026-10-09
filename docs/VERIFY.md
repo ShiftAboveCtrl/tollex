@@ -69,6 +69,12 @@ curl -s $RPC -H 'content-type: application/json' \
 
 Expect `0x0`.
 
+## In a browser
+
+Open the launch settlement on Blockscout, the public Robinhood Chain explorer:
+[0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533](https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533). It shows the `transferWithAuthorization` call from the relayer, the 0.001 USDG transfer
+from the canary payer to the treasury, and block 83,335,219.
+
 ## Integrity of the evidence file
 
 ```bash
