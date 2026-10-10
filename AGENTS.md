@@ -49,6 +49,8 @@ A quote (`/v1/quote`, or `/v1/resolve` with `quote: true`) is priced on ONE rail
 
 **Try a real mainnet call:** [docs/TRY.md](docs/TRY.md), one command with `uv run` or any x402 client.
 
+**As an agent skill:** `npx skills add ShiftAboveCtrl/tollex` ([skills/tollex/SKILL.md](skills/tollex/SKILL.md)).
+
 **First real payment:** `GET https://api.tollex.org/v1/agent-check` (no body; the cheapest paid call). It returns which
 rail you paid on, every rail's live state and the chain heads, with a signed receipt.
 

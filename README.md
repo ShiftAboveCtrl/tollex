@@ -30,6 +30,7 @@
 | **Live?** | Yes, on mainnet since 2026-10-08. [First settlement on Blockscout](https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533) · [public activity](https://tollex.org/activity/) |
 | **Pay with** | USDC on Base (`eip155:8453`) or USDG on Robinhood Chain (`eip155:4663`): x402 v2 `exact`, EIP-3009, same price |
 | **Try a real mainnet call** | One command, no signup: [docs/TRY.md](docs/TRY.md) (about 0.008 USD in USDC on Base, signed receipt, appears on [Activity](https://tollex.org/activity/)) |
+| **Agent skill** | `npx skills add ShiftAboveCtrl/tollex` installs [skills/tollex](skills/tollex/SKILL.md) into Claude Code, Cursor, Codex and other agents (plan free, pay with your ceiling, verify the receipt) |
 | **First payment** | `GET https://api.tollex.org/v1/agent-check` (about 0.008 USD): [Option A Base USDC / Option B Robinhood USDG](docs/QUICKSTART.md#try-tollex-now-your-first-real-payment) |
 | **Try it (nothing spent)** | `git clone https://github.com/ShiftAboveCtrl/tollex && cd tollex && examples/curl/try-tollex.sh` |
 | **Integrate** | [QUICKSTART](docs/QUICKSTART.md) · [AGENTS.md](AGENTS.md) · [examples/](examples/) · [developers](https://tollex.org/developers/) |
