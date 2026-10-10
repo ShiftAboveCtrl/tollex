@@ -14,6 +14,8 @@ EVIDENCE="$(cd "$(dirname "$0")/.." && pwd)/evidence/mainnet-launch.public.json"
 
 NETWORK="eip155:4663"
 USDG="0x5fc5360d0400a0fd4f2af552add042d716f1d168"
+BASE_NETWORK="eip155:8453"
+BASE_USDC="0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
 RECEIPT_SIGNER="0x69d778c105b7f94bde775d7ae94f1daa56daa88f"
 RELAYER="0xcbe1b48c188edf24b3c939e46647a80fb9f75645"
 CANARY_PAYER="0x488bf1856c50ec965b13d8e745ff31f6b1fc4841"
@@ -76,10 +78,11 @@ if [ "$code" = 402 ]; then
   pr=$(grep -i '^payment-required:' "$TMP/headers" | head -1 | cut -d' ' -f2- | tr -d '\r')
   if [ -n "$pr" ] && printf '%s' "$pr" | jq -R '@base64d | fromjson' > "$TMP/pr" 2>/dev/null \
      && jq -e ".x402Version == 2 and (.accepts | length) > 0
-               and all(.accepts[]; .network == \"$NETWORK\" and (.asset | ascii_downcase) == \"$USDG\"
+               and any(.accepts[]; .network == \"$NETWORK\" and (.asset | ascii_downcase) == \"$USDG\")
+               and all(.accepts[]; ((.network == \"$NETWORK\" and (.asset | ascii_downcase) == \"$USDG\") or (.network == \"$BASE_NETWORK\" and (.asset | ascii_downcase) == \"$BASE_USDC\"))
                                    and (.payTo | ascii_downcase) == \"$TREASURY\" and (.amount | test(\"^[1-9][0-9]*$\")))
                and .extensions.bazaar.info != null and .extensions.bazaar.schema != null" "$TMP/pr" >/dev/null; then
-    ok "x402 challenge + Bazaar" "$(jq -r '"\(.accepts[0].amount) atomic USDG on \(.accepts[0].network), payTo treasury"' "$TMP/pr")"
+    ok "x402 challenge + Bazaar" "$(jq -r '[.accepts[] | "\(.amount) atomic on \(.network)"] | join(", ") + ", payTo treasury"' "$TMP/pr")"
   else bad "x402 challenge + Bazaar" "challenge missing or unexpected"; fi
 elif [ "$code" = 503 ] && jq -e '.error == "paid_calls_paused" and .charged == false' "$TMP/body" >/dev/null 2>&1; then
   # Fail-closed by design: settlement gas rose beyond the price tolerance, so new paid calls wait.

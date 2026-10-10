@@ -2,6 +2,18 @@
 
 Public milestones of the Tollex production service.
 
+## 2026-10-10: USDC on Base as a second payment rail
+
+- Every capability is now payable with x402 v2 `exact` in **USDC on Base** (`eip155:8453`) or **USDG on Robinhood
+  Chain** (`eip155:4663`), at the same price. The `402` lists one option per rail; standard `@x402` clients pay Base
+  USDC with their default settings.
+- Base payments are settled by an x402 facilitator and confirmed on Base by Tollex (transaction succeeded, this
+  authorization consumed, exact amount from the payer to the treasury) before any result is released. Receipts are
+  signed by the same published key and record the payment network.
+- `GET /v1/agent-check`: the first paid call (about 0.008 USD) to verify an integration end to end.
+- Standard x402 discovery: `/.well-known/x402` and OpenAPI `x-payment-info`.
+- Examples: `--rail base|robinhood`, `first-payment`, spend policy (per call, per session, allowed rails).
+
 ## 2026-10-09: Developer onboarding
 
 - [QUICKSTART](docs/QUICKSTART.md) and [AGENTS.md](AGENTS.md) for developers and coding agents.
