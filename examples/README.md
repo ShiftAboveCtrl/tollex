@@ -5,6 +5,8 @@ follows the same flow: discover, plan for free, read the exact x402 price, pay o
 ceiling, verify the receipt. **Nothing pays unless you pass `--pay` (or set `TOLLEX_ALLOW_PAYMENTS=1`) with a
 key that holds USDC on Base (default rail, `--rail base`) or USDG on Robinhood Chain (`--rail robinhood`).**
 
+**One command, nothing to clone:** `TOLLEX_PRIVATE_KEY=0x... uv run https://raw.githubusercontent.com/ShiftAboveCtrl/tollex/main/examples/agent-check/agent_check.py --pay --max 10000` ([agent-check/](agent-check/agent_check.py); `--tool <id> --input '<json>'` buys a capability the same way).
+
 **Make your first real payment:** `npm run first-payment -- --pay --max 10000` (TypeScript) or
 `python first_payment.py --pay --max 10000` (Python) buys `GET /v1/agent-check`, about 0.008 USD.
 

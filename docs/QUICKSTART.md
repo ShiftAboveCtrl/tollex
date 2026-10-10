@@ -10,6 +10,14 @@ examples/curl/try-tollex.sh
 You will see the service descriptor, a free plan for a need, the exact x402 payment terms for one call,
 a real receipt from the first mainnet settlement, and an A2A planning task.
 
+## Try a real mainnet call (one command)
+
+```bash
+TOLLEX_PRIVATE_KEY=0x... uv run https://raw.githubusercontent.com/ShiftAboveCtrl/tollex/main/examples/agent-check/agent_check.py --pay --max 10000
+```
+
+Details and five capabilities worth a first call: [TRY.md](TRY.md).
+
 ## Try Tollex now: your first real payment
 
 One paid call, about 0.008 USD, priced the same on both rails: `GET https://api.tollex.org/v1/agent-check`. It

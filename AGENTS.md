@@ -47,6 +47,8 @@ Same price on both rails. Same capabilities, receipts and recovery. The receipt'
 A quote (`/v1/quote`, or `/v1/resolve` with `quote: true`) is priced on ONE rail: pass `"network"` (quote) or
 `constraints.networks` (resolve, A2A `execute_intent`) for the rail you will pay on; a quote-bound 402 offers only that rail.
 
+**Try a real mainnet call:** [docs/TRY.md](docs/TRY.md), one command with `uv run` or any x402 client.
+
 **First real payment:** `GET https://api.tollex.org/v1/agent-check` (no body; the cheapest paid call). It returns which
 rail you paid on, every rail's live state and the chain heads, with a signed receipt.
 
