@@ -3,6 +3,7 @@
     python agent_demo.py "USDG balance of 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"
 
 discover -> plan (free) -> terms (402) -> local ceiling -> ask the human -> pay -> result -> verify receipt.
+TOLLEX_RAIL picks the payment rail: base (default, USDC on Base) or robinhood (USDG on Robinhood Chain).
 Nothing is signed unless TOLLEX_PRIVATE_KEY is set AND the human approves (or TOLLEX_AUTO_APPROVE_MAX, in atomic
 USDG, covers the price). TOLLEX_MAX_ATOMIC_USDG is the hard ceiling (default 10000 = 0.01 USDG).
 Dependencies: pip install -r ../python/requirements.txt
@@ -17,6 +18,7 @@ import tollex_client as tollex  # noqa: E402
 
 need = " ".join(sys.argv[1:]) or "latest block on Robinhood Chain"
 ceiling = int(os.environ.get("TOLLEX_MAX_ATOMIC_USDG", "10000"))
+rail = os.environ.get("TOLLEX_RAIL", "base")  # base (USDC on Base) or robinhood (USDG on Robinhood Chain)
 auto = int(os.environ.get("TOLLEX_AUTO_APPROVE_MAX", "0"))
 key = os.environ.get("TOLLEX_PRIVATE_KEY")
 
@@ -38,32 +40,32 @@ if not sel:
 tool = sel["toolId"]
 step(2, f"plan (free): {tool}, {plan['eligible']} eligible of {plan['candidates']}")
 
-t = tollex.terms(tool, guess)
-step(3, f"terms: {t['amount']} atomic USDG ({t['amount'] / 1e6} USDG) to {t['option']['payTo']} on {t['option']['network']}")
+t = tollex.terms(tool, guess, rail)
+step(3, f"terms: {t['amount']} atomic {tollex.RAILS[rail]['symbol']} ({t['amount'] / 1e6}) to {t['option']['payTo']} on {t['option']['network']}")
 
 if t["amount"] > ceiling:
     sys.exit(f"[4] refused locally: price {t['amount']} > ceiling {ceiling}; nothing signed")
 step(4, f"within the ceiling ({ceiling})")
 
 if not key:
-    sys.exit("[5] stopping before payment: set TOLLEX_PRIVATE_KEY (a wallet holding USDG on Robinhood Chain) to continue")
+    sys.exit(f"[5] stopping before payment: set TOLLEX_PRIVATE_KEY (a wallet holding {tollex.RAILS[rail]['symbol']} on {tollex.RAILS[rail]['network']}) to continue")
 if t["amount"] <= auto:
     step(5, f"auto-approved by TOLLEX_AUTO_APPROVE_MAX={auto}")
 else:
-    answer = input(f"[5] Pay {t['amount'] / 1e6} USDG for {tool}? [y/N] ").strip().lower()
+    answer = input(f"[5] Pay {t['amount'] / 1e6} {tollex.RAILS[rail]['symbol']} on {tollex.RAILS[rail]['network']} for {tool}? [y/N] ").strip().lower()
     if answer != "y":
         sys.exit("[5] declined by the human; nothing signed")
 
 try:
-    r = tollex.buy(key, tool, guess, ceiling)
+    r = tollex.pay(key, t, tollex.SpendPolicy(ceiling, ceiling, [rail]))
 except tollex.Rejected as e:
     sys.exit(f"[6] rejected before anything was sent on chain, nothing moved: {e}"
-             + ("\n    fund the payer with USDG on Robinhood Chain" if "balance" in str(e) else ""))
+             + (f"\n    fund the payer with {tollex.RAILS[rail]['symbol']} on {tollex.RAILS[rail]['network']}" if "balance" in str(e) else ""))
 except RuntimeError as e:
     sys.exit(f"[6] not charged: {e}")
 s = r["settlement"] or {}
 tx = s.get("transaction")
-step(6, f"paid: {tollex.BLOCKSCOUT}{tx}" if tx else f"status {r['status']}: poll the operation before retrying")
+step(6, f"paid: {r['explorer']}" if tx else f"status {r['status']}: poll the operation before retrying")
 print(json.dumps(r["result"], indent=2)[:600])
 
 receipt = (s.get("extensions") or {}).get("tollex-receipt", {}).get("info")

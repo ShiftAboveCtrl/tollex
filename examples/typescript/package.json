@@ -5,6 +5,7 @@
   "description": "Discover, plan, pay (only with an explicit ceiling) and verify receipts against https://api.tollex.org",
   "scripts": {
     "try": "tsx src/try.ts",
+    "first-payment": "tsx src/first-payment.ts",
     "verify-receipt": "tsx src/verify-receipt.ts",
     "typecheck": "tsc --noEmit"
   },

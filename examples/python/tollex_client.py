@@ -19,11 +19,31 @@ from eth_account.messages import encode_typed_data
 from eth_utils import keccak, to_checksum_address
 
 TOLLEX = os.environ.get("TOLLEX_URL", "https://api.tollex.org")
-NETWORK = "eip155:4663"  # Robinhood Chain mainnet
-CHAIN_ID = 4663
-USDG = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"  # 6 decimals
-BLOCKSCOUT = "https://robinhoodchain.blockscout.com/tx/"
 TIMEOUT = 30
+
+# The payment rails Tollex accepts. Pinned: a 402 asking for another network, asset, or more than your
+# ceiling is refused before anything is signed.
+RAILS = {
+    "base": {"network": "eip155:8453", "chain_id": 8453, "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "symbol": "USDC", "explorer": "https://base.blockscout.com/tx/"},
+    "robinhood": {"network": "eip155:4663", "chain_id": 4663, "asset": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168", "symbol": "USDG", "explorer": "https://robinhoodchain.blockscout.com/tx/"},
+}
+# Backwards-compatible names (Robinhood Chain rail).
+NETWORK, CHAIN_ID, USDG, BLOCKSCOUT = RAILS["robinhood"]["network"], 4663, RAILS["robinhood"]["asset"], RAILS["robinhood"]["explorer"]
+
+
+class SpendPolicy:
+    """Enforced locally before any signature: per-call ceiling, session budget, allowed rails."""
+
+    def __init__(self, max_per_call: int, max_per_session: int, rails: list[str]):
+        self.max_per_call, self.max_per_session, self.rails, self.spent = max_per_call, max_per_session, rails, 0
+
+    def check(self, rail: str, amount: int) -> None:
+        if rail not in self.rails:
+            raise ValueError(f"rail {rail} not allowed by policy")
+        if amount > self.max_per_call:
+            raise ValueError(f"refusing to pay {amount} > per-call ceiling {self.max_per_call} (nothing signed)")
+        if self.spent + amount > self.max_per_session:
+            raise ValueError(f"refusing to pay {amount}: session budget {self.spent}/{self.max_per_session} (nothing signed)")
 
 
 class Rejected(Exception):
@@ -49,21 +69,26 @@ def _b64json(header: str) -> dict:
     return json.loads(base64.b64decode(header))
 
 
-def terms(tool_id: str, input: dict) -> dict:
-    """3. An unpaid call returns HTTP 402 with the exact, authoritative payment terms."""
-    r = requests.post(f"{TOLLEX}/tools/{tool_id}", json=input, timeout=TIMEOUT)
+def terms(tool_id: str, input: dict, rail: str = "robinhood") -> dict:
+    """3. An unpaid call returns HTTP 402 with the exact, authoritative terms (one option per rail)."""
+    return terms_for("POST", f"/tools/{tool_id}", input, rail)
+
+
+def terms_for(method: str, path: str, input: dict | None, rail: str) -> dict:
+    r_ = RAILS[rail]
+    r = requests.request(method, f"{TOLLEX}{path}", json=input, timeout=TIMEOUT)
     if r.status_code == 503:
         raise RuntimeError("paid calls paused (network gas spike); retry later, nothing was charged")
     if r.status_code != 402:
         raise RuntimeError(f"expected 402 payment terms, got {r.status_code}")
     challenge = _b64json(r.headers["payment-required"])
     for option in challenge["accepts"]:
-        if option["network"] == NETWORK and to_checksum_address(option["asset"]) == to_checksum_address(USDG):
-            return {"url": f"{TOLLEX}/tools/{tool_id}", "amount": int(option["amount"]), "option": option, "challenge": challenge}
-    raise RuntimeError("no USDG payment option on Robinhood Chain in the challenge")
+        if option["network"] == r_["network"] and to_checksum_address(option["asset"]) == to_checksum_address(r_["asset"]):
+            return {"method": method, "url": f"{TOLLEX}{path}", "input": input, "rail": rail, "amount": int(option["amount"]), "option": option, "challenge": challenge}
+    raise RuntimeError(f"no {r_['symbol']} option on {r_['network']} in the challenge (offered: {[a['network'] for a in challenge['accepts']]})")
 
 
-def _authorization(account, option: dict) -> dict:
+def _authorization(account, option: dict, chain_id: int = CHAIN_ID) -> dict:
     """EIP-3009 transferWithAuthorization for exactly the quoted amount, to the quoted recipient."""
     auth = {
         "from": account.address,
@@ -91,26 +116,32 @@ def _authorization(account, option: dict) -> dict:
             ],
         },
         "primaryType": "TransferWithAuthorization",
-        "domain": {"name": option["extra"]["name"], "version": option["extra"]["version"], "chainId": CHAIN_ID, "verifyingContract": to_checksum_address(option["asset"])},
+        "domain": {"name": option["extra"]["name"], "version": option["extra"]["version"], "chainId": chain_id, "verifyingContract": to_checksum_address(option["asset"])},
         "message": {**auth, "value": int(auth["value"]), "validAfter": 0, "validBefore": int(auth["validBefore"]), "nonce": bytes.fromhex(auth["nonce"][2:])},
     }
     signed = account.sign_message(encode_typed_data(full_message=typed))
     return {"authorization": auth, "signature": "0x" + signed.signature.hex().removeprefix("0x")}
 
 
-def buy(private_key: str, tool_id: str, input: dict, max_atomic_usdg: int) -> dict:
-    """4. Pay and call, ONLY at or below max_atomic_usdg. Returns the result and the settlement."""
-    t = terms(tool_id, input)
-    if t["amount"] > max_atomic_usdg:
-        raise ValueError(f"refusing to pay {t['amount']} > ceiling {max_atomic_usdg} atomic USDG (nothing signed)")
+def buy(private_key: str, tool_id: str, input: dict, max_atomic: int, rail: str = "robinhood", policy: "SpendPolicy | None" = None) -> dict:
+    """4. Pay and call a capability on ONE pinned rail, ONLY at or below the ceiling."""
+    return pay(private_key, terms(tool_id, input, rail), policy or SpendPolicy(max_atomic, max_atomic, [rail]))
+
+
+def pay(private_key: str, t: dict, policy: SpendPolicy) -> dict:
+    """Sign exactly the quoted amount for the pinned rail and resend; returns the result and the settlement."""
+    policy.check(t["rail"], t["amount"])
     account = Account.from_key(private_key)
-    payment = {"x402Version": 2, "accepted": t["option"], "resource": t["challenge"]["resource"], "payload": _authorization(account, t["option"])}
+    payment = {"x402Version": 2, "accepted": t["option"], "resource": t["challenge"]["resource"], "payload": _authorization(account, t["option"], RAILS[t["rail"]]["chain_id"])}
     header = base64.b64encode(json.dumps(payment, separators=(",", ":")).encode()).decode()
-    r = requests.post(t["url"], json=input, headers={"PAYMENT-SIGNATURE": header}, timeout=120)
+    r = requests.request(t["method"], t["url"], json=t["input"], headers={"PAYMENT-SIGNATURE": header}, timeout=120)
     if r.status_code == 402:
         raise Rejected(r.json().get("error", "rejected"))
     settlement = _b64json(r.headers["payment-response"]) if "payment-response" in r.headers else None
-    return {"status": r.status_code, "result": r.json(), "settlement": settlement}
+    if r.status_code == 200:
+        policy.spent += t["amount"]
+    tx = (settlement or {}).get("transaction")
+    return {"status": r.status_code, "result": r.json(), "settlement": settlement, "explorer": f"{RAILS[t['rail']]['explorer']}{tx}" if tx else None}
 
 
 def operation(operation_id: str) -> dict:

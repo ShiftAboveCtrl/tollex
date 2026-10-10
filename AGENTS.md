@@ -9,7 +9,8 @@ not scrape the website.
 2. **Inspect capabilities**: `GET https://api.tollex.org/v1/catalog` (ids, input schemas, prices).
 3. **Plan for the need**: `POST https://api.tollex.org/v1/resolve` `{"need": "..."}`. Free.
 4. **Get the terms**: `POST https://api.tollex.org/tools/{toolId}` without payment, read the `402`.
-5. **Check asset and network**: only `eip155:4663` + USDG. If the payer has none, stop and tell the human.
+5. **Pick the rail your wallet holds**: USDC on Base (`eip155:8453`) or USDG on Robinhood Chain (`eip155:4663`).
+   Pin the asset address of that rail (table below). If the payer holds neither, stop and tell the human.
 6. **Enforce the ceiling**: refuse when `amount` > the ceiling the human configured. Never pick a ceiling yourself.
 7. **Ask before paying** unless the human has explicitly enabled autonomous payment with that ceiling.
 8. **Pay**: sign EIP-3009 for exactly `amount` to `payTo` and resend with `PAYMENT-SIGNATURE` (details below).
@@ -30,10 +31,24 @@ explicit opt-in (steps 5 to 8), and `verifyReceipt(receipt)` (step 9). Reference
 
 ## What Tollex is
 
-A paid-capability service for autonomous software on **Robinhood Chain mainnet** (`eip155:4663`). An agent
-plans for free, pays per call in **USDG** with **x402 v2** (`exact` scheme, EIP-3009), and receives the
+A paid-capability service for autonomous software, live on mainnet. An agent plans for free, pays per call
+with **x402 v2** (`exact` scheme, EIP-3009) in **USDC on Base** or **USDG on Robinhood Chain**, and receives the
 result with a **signed receipt**. Tollex enforces price and terms before money moves, settles with its
 own facilitator, and reconciles every settlement on chain.
+
+## Payment rails (both accepted; the 402 lists one option per rail)
+
+| Rail | Network | Asset | EIP-712 domain | Notes |
+| --- | --- | --- | --- | --- |
+| Base | `eip155:8453` | USDC `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` (6 decimals) | "USD Coin" / "2" | an `@x402` default asset: stock clients pay it with no extra config |
+| Robinhood Chain | `eip155:4663` | USDG `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` (6 decimals) | "Global Dollar" / "1" | allow it explicitly in `@x402` `spendControls.allowedAssets` |
+
+Same price on both rails. Same capabilities, receipts and recovery. The receipt's `payment.network` names the rail.
+A quote (`/v1/quote`, or `/v1/resolve` with `quote: true`) is priced on ONE rail: pass `"network"` (quote) or
+`constraints.networks` (resolve, A2A `execute_intent`) for the rail you will pay on; a quote-bound 402 offers only that rail.
+
+**First real payment:** `GET https://api.tollex.org/v1/agent-check` (no body; the cheapest paid call). It returns which
+rail you paid on, every rail's live state and the chain heads, with a signed receipt.
 
 ## Inspect first (all free, no auth)
 
@@ -51,15 +66,16 @@ own facilitator, and reconciles every settlement on chain.
 
 1. `POST https://api.tollex.org/tools/{toolId}` with the JSON input and **no** payment header. Expect
    `402` and a `PAYMENT-REQUIRED` header (base64 JSON, x402 v2). Those live terms are authoritative.
-2. Choose the option with `network == "eip155:4663"` and `asset == 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168`.
-   Refuse if `amount` (atomic USDG, 6 decimals) is above your ceiling.
+2. Choose the option whose `network` and `asset` match the rail you pinned (table above).
+   Refuse if `amount` (atomic units, 6 decimals) is above your ceiling, or if no option matches.
 3. Sign an EIP-3009 `TransferWithAuthorization` for exactly `amount` to `payTo`, with the EIP-712 domain
-   `{name: extra.name, version: extra.version, chainId: 4663, verifyingContract: asset}`, `validAfter = 0`,
+   `{name: extra.name, version: extra.version, chainId: <8453 for Base, 4663 for Robinhood Chain>, verifyingContract: asset}`, `validAfter = 0`,
    `validBefore = now + maxTimeoutSeconds`, a random 32-byte nonce.
 4. Repeat the request with `PAYMENT-SIGNATURE: base64(JSON{x402Version: 2, accepted: <option>, resource, payload: {authorization, signature}})`.
-   With the official `@x402/fetch`, allow the asset explicitly: `spendControls: {allowedAssets: [{network: "eip155:4663", asset: "0x5fc5…d168", maxAmountPerPayment: "<ceiling>"}]}`.
+   With the official `@x402/fetch`: Base USDC works with the default spend controls (set a cap). For USDG, allow it
+   explicitly: `spendControls: {allowedAssets: [{network: "eip155:4663", asset: "0x5fc5…d168", maxAmountPerPayment: "<ceiling>"}]}`.
 5. `200`: the body is the result; `PAYMENT-RESPONSE` (base64 JSON) holds the transaction and
-   `extensions["tollex-receipt"].info`. Show `https://robinhoodchain.blockscout.com/tx/<transaction>`.
+   `extensions["tollex-receipt"].info`. Show the explorer link: `https://base.blockscout.com/tx/<tx>` (Base) or `https://robinhoodchain.blockscout.com/tx/<tx>` (Robinhood Chain).
 
 ## Outcomes and recovery
 
@@ -80,7 +96,8 @@ own facilitator, and reconciles every settlement on chain.
 
 ## Do not assume
 
-- Only `eip155:4663` and USDG are accepted. No Base, no USDC, no other chain.
+- Only these two rails are accepted: USDC on Base (`eip155:8453`) and USDG on Robinhood Chain (`eip155:4663`). No other
+  chain or token; a 402 asking for anything else is not from Tollex.
 - No MCP endpoint is offered in production.
 - Paying third-party x402 merchants through Tollex is not enabled on mainnet.
 - Prices change with network gas; always read the live `402` terms.

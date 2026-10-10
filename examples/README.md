@@ -3,7 +3,10 @@
 Each example runs against the live production API (`https://api.tollex.org`, Robinhood Chain mainnet) and
 follows the same flow: discover, plan for free, read the exact x402 price, pay only with an explicit
 ceiling, verify the receipt. **Nothing pays unless you pass `--pay` (or set `TOLLEX_ALLOW_PAYMENTS=1`) with a
-key that holds USDG on Robinhood Chain.**
+key that holds USDC on Base (default rail, `--rail base`) or USDG on Robinhood Chain (`--rail robinhood`).**
+
+**Make your first real payment:** `npm run first-payment -- --pay --max 10000` (TypeScript) or
+`python first_payment.py --pay --max 10000` (Python) buys `GET /v1/agent-check`, about 0.008 USD.
 
 | Example | Run | Verified |
 | --- | --- | --- |

@@ -28,7 +28,8 @@
 | --- | --- |
 | **What** | Paid capabilities for software agents: plan for free, pay per call over x402 v2, get a signed receipt for every result |
 | **Live?** | Yes, on mainnet since 2026-10-08. [First settlement on Blockscout](https://robinhoodchain.blockscout.com/tx/0x82f1c72cdc3d27bcb7dac1391222fd6e5462ec3c91352c82e2ff0801eda1c533) · [public activity](https://tollex.org/activity/) |
-| **Network** | Robinhood Chain mainnet `eip155:4663`, USDG (`0x5fc5…d168`, 6 decimals, EIP-3009) |
+| **Pay with** | USDC on Base (`eip155:8453`) or USDG on Robinhood Chain (`eip155:4663`): x402 v2 `exact`, EIP-3009, same price |
+| **First payment** | `GET https://api.tollex.org/v1/agent-check` (about 0.008 USD): [Option A Base USDC / Option B Robinhood USDG](docs/QUICKSTART.md#try-tollex-now-your-first-real-payment) |
 | **Try it (nothing spent)** | `git clone https://github.com/ShiftAboveCtrl/tollex && cd tollex && examples/curl/try-tollex.sh` |
 | **Integrate** | [QUICKSTART](docs/QUICKSTART.md) · [AGENTS.md](AGENTS.md) · [examples/](examples/) · [developers](https://tollex.org/developers/) |
 | **Discover** | [`/.well-known/tollex.json`](https://api.tollex.org/.well-known/tollex.json) · [OpenAPI](https://api.tollex.org/openapi.json) · [catalog](https://api.tollex.org/v1/catalog) · [A2A card](https://api.tollex.org/.well-known/agent-card.json) · [llms.txt](https://api.tollex.org/llms.txt) |
@@ -78,8 +79,8 @@ no custody**, and that its operator can audit end to end.
 | --- | --- | --- | --- |
 | **Status** | Live since 2026-10-08 | **Discovery** | Descriptor, OpenAPI 3.1, `llms.txt`, catalogue |
 | **Endpoint** | [`api.tollex.org`](https://api.tollex.org/.well-known/tollex.json) | **Agent-to-agent** | A2A agent card and JSON-RPC endpoint |
-| **Network** | Robinhood Chain mainnet, `eip155:4663` | **Payment** | HTTP 402 challenges with Bazaar metadata |
-| **Asset** | USDG, 6 decimals | **Proof** | EIP-712 receipts, published signing keys |
+| **Networks** | Base `eip155:8453`, Robinhood Chain `eip155:4663` | **Payment** | HTTP 402 challenges, one option per rail, Bazaar metadata |
+| **Assets** | USDC on Base, USDG on Robinhood Chain (6 decimals) | **Proof** | EIP-712 receipts, published signing keys |
 | **Protocol** | x402 v2, `exact`, EIP-3009 | **Status** | Readiness, operation and receipt lookups |
 | **Capabilities** | 34 first-party, JSON Schemas | **Security** | [security@tollex.org](mailto:security@tollex.org) |
 
@@ -216,8 +217,8 @@ with a `PAYMENT-SIGNATURE` header. See [AGENT_DISCOVERY](docs/AGENT_DISCOVERY.md
 | [AGENTS.md](AGENTS.md) | Exact instructions for an AI agent or coding agent |
 | [examples/](examples/) | curl, TypeScript (`@x402/fetch`), Python, A2A, LangChain / LangGraph, CrewAI, Google ADK |
 
-Every example pays only with an explicit opt-in and a hard ceiling. With `@x402/fetch`, allow USDG on
-Robinhood Chain in `spendControls.allowedAssets`; it is not a default asset.
+Every example pays only with an explicit opt-in, a pinned rail and a hard ceiling. With `@x402/fetch`, Base USDC
+works with the default spend controls; for USDG on Robinhood Chain add `spendControls.allowedAssets` (not a default asset).
 
 <br>
 
@@ -291,6 +292,7 @@ a day from GitHub's runners and publishes the result as the live verification ba
 | Status | Item |
 | --- | --- |
 | **Live** | Native x402 v2 facilitator on Robinhood Chain mainnet, USDG settlement |
+| **Live** | USDC on Base as a second payment rail (standard x402; settlement confirmed on Base by Tollex before any result is released) |
 | **Live** | 34 first-party capabilities, free planning, EIP-712 receipts, on-chain reconciliation |
 | **Live** | Agent discovery: descriptor, OpenAPI 3.1, `llms.txt`, catalogue, A2A |
 | **Next** | Routing paid calls to external third-party x402 merchants on mainnet, under the same policy and receipt guarantees (built; intentionally disabled at launch) |
@@ -312,7 +314,8 @@ so that the live service can be evaluated and checked independently. See [NOTICE
 <summary><b>Does Tollex hold my funds?</b></summary>
 
 No. You sign an EIP-3009 authorization for one exact amount to one exact recipient, valid once and for a
-limited time. The USDG contract moves the funds directly from your wallet to the Tollex treasury.
+limited time. The token contract (USDC on Base or USDG on Robinhood Chain) moves the funds directly from your
+wallet to the Tollex treasury.
 </details>
 
 <details>
@@ -333,8 +336,8 @@ on chain. The `receipt_verify` capability and [RECEIPTS](docs/RECEIPTS.md) descr
 <details>
 <summary><b>Can my agent use Tollex without an account or API key?</b></summary>
 
-Yes. Discovery and planning are open. Paid calls need only a wallet holding USDG on Robinhood Chain and an
-x402 v2 client.
+Yes. Discovery and planning are open. Paid calls need only a wallet holding USDC on Base or USDG on Robinhood
+Chain, and an x402 v2 client.
 </details>
 
 <br>
