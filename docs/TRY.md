@@ -22,6 +22,13 @@ Already using [x402-proxy](https://github.com/cascade-protocol/x402-proxy) with 
 npx x402-proxy --network base https://api.tollex.org/v1/agent-check
 ```
 
+Already using [AgentCash](https://agentcash.dev) (its wallet pays in USDC on Base):
+
+```bash
+npx agentcash@latest fetch https://api.tollex.org/v1/agent-check
+npx agentcash@latest fetch https://api.tollex.org/tools/stock_token_halt_status -m POST -b '{"symbol":"TSLA"}'
+```
+
 Any x402 v2 client works: `GET https://api.tollex.org/v1/agent-check`, read the `402`, pay the `eip155:8453` USDC
 option. With `@x402/fetch` that is a wallet and the default spend controls. More: [QUICKSTART](QUICKSTART.md),
 [TypeScript](../examples/typescript/), [Python](../examples/python/), [A2A](../examples/a2a/a2a_tollex.py),

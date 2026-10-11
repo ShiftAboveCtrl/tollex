@@ -50,7 +50,8 @@ uv run $A --tool chain_simulate --input '{"to":"0x...","data":"0x..."}' --pay --
 `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168`, `eip155:4663`). If it holds neither, stop and tell the user.
 
 Any x402 v2 client works instead of the script (`@x402/fetch`, x402 Python, `npx x402-proxy --network base <url>`):
-Base USDC is a default asset there; set a spend cap.
+Base USDC is a default asset there; set a spend cap. With an AgentCash wallet (pays USDC on Base):
+`npx agentcash@latest fetch https://api.tollex.org/v1/agent-check`.
 
 ## Report back to the user
 
